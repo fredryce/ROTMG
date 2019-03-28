@@ -1,0 +1,23 @@
+
+when exp increase or fame increase reward +
+when health decrease reward decrease
+reward decrease over time
+reward decrease if ctrl is pressed
+possible combinations: the mouse will always be in front of center, always firing
+q
+w
+e
+a
+s
+d
+qw
+we
+aq
+ed
+sq
+se
+aw
+as
+sd
+wd
+ctrl
