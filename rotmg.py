@@ -7,7 +7,10 @@ import random
 
 def mouse_cb(event, x, y, flags, params):
 	if event == cv2.EVENT_LBUTTONDOWN:
-		print(params[y, x, :])
+		try:
+			print(params[y, x, :])
+		except Exception as e:
+			print(params[y, x])
 
 
 def check_special(hp_level):
@@ -111,12 +114,9 @@ def realm_location_get(frame, center, seed, manu=False):
 			return False
 		except IndexError:
 			print('entered in realmw')
+			print(spts)
 			return True
-
-		
-
-
-	return True 
+ 
 	
 
 def toward_realm(win_location):
@@ -137,11 +137,12 @@ def toward_realm(win_location):
 		min_val = min_val/10000000
 		#print(min_val)
 		if min_val  < 0.4 and not location_aq:
-			location_aq = realm_location_get(screen, center, 0)
+			#location_aq = realm_location_get(screen, center, 0)
 			pyautogui.keyUp('w')
 			print('location detected..')
+			location_aq = True 
 		elif location_aq:
-			value = 0
+
 			if counter%15==0:
 
 				seed = random.randrange(0,100)
@@ -166,46 +167,6 @@ def toward_realm(win_location):
 
 
 
-
-
-
-	#show_frame(mask)
-	'''
-	max_white_pix = 0
-	sense = 25
-	win_location = (int(win_location[0]+(win_location[2] - win_location[0])*0.75), win_location[1], win_location[2], int(win_location[1]+(win_location[3] - win_location[1])*0.33))
-	print(win_location)
-	while True:
-		screen = np.array(grab_screen(region=win_location), dtype='uint8')
-		frame = cv2.cvtColor(screen, cv2.COLOR_BGR2RGB)
-
-		map_win=frame
-		temp_map = map_win.copy()
-		
-		#row, column
-		center = (int(temp_map.shape[0]/2), int(temp_map.shape[1]/2))
-		temp_map[np.where((temp_map==[0,255,255]).all(axis=2))] = [255,255,255]
-		temp_map[np.where((temp_map==[255,0,0]).all(axis=2))] = [255,255,255]
-		#temp_map[np.where((temp_map==[0,0,0]).all(axis=2))] = [255,255,255]
-		hsv = cv2.cvtColor(temp_map, cv2.COLOR_RGB2HSV)
-
-		lower_white = np.array([0,0,255-sense])
-		upper_white = np.array([255,sense, 255])
-		mask = cv2.inRange(hsv, lower_white, upper_white)
-		current_white = np.where(mask[:center[0], center[1]]==255)
-		print(current_white[0].shape)
-
-
-
-
-		cv2.imshow('output', mask)
-		if cv2.waitKey(25) & 0xFF == ord('q'):
-			cv2.destroyAllWindows()
-			break
-
-
-
-		'''
 
 
 def check_dong(game_win, kargs):
@@ -239,9 +200,10 @@ pet_yard = cv2.imread('petyard.png', 0)
 
 
 
-#cv2.namedWindow('output')
-#cv2.setMouseCallback('output',mouse_cb)
-nexus = True
+cv2.namedWindow('output')
+cv2.setMouseCallback('output',mouse_cb)
+nexus = False
+nexusing = False
 while True:
 	screen = np.array(grab_screen(region=win_location), dtype='uint8')
 	frame = cv2.cvtColor(screen, cv2.COLOR_BGR2RGB)
@@ -257,6 +219,9 @@ while True:
 				for i in range(4):
 					time.sleep(1)
 					value = check_dong(game_win, {'next':next_image, 'petyard':pet_yard })
+					if nexusing:
+						value=0
+						continue
 
 				print('Entered Dongen: ', value)
 				if value == 0:
@@ -264,14 +229,14 @@ while True:
 			else:
 				print('dying')
 				pyautogui.hotkey('ctrl')
-				time.sleep(4)
-				nexus = True
+				nexusing = True
 	else:
 		toward_realm(win_location)
 		nexus = False
+		nexusing=False
+	frame = cv2.cvtColor(frame, cv2.COLOR_RGB2GRAY)
 
-
-	#cv2.imshow('output', frame)
+	cv2.imshow('output', frame)
 	cv2.setMouseCallback('output',mouse_cb, frame)
 	
 

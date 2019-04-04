@@ -48,6 +48,5 @@ def callback(hwnd, extra):
     print("\t    Size: (%d, %d)" % (w, h))
 
 def get_win_info():
-    #win32gui.EnumWindows(callback, None)
     rect = win32gui.GetWindowRect(win32gui.FindWindow(None, 'Adobe Flash Player 32'))
     return rect
