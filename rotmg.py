@@ -76,7 +76,7 @@ def realm_location_get(frame, center, seed, manu=False):
 	global_mask = global_mask[1:-1, 1:-1]
 
 	character_tri_mask[global_mask==1] = 0
-	spts = np.where((character_tri_mask==255)) # this is neede ot change color of the frame
+	spts = np.where((character_tri_mask==255)) # this is needed to change color of the frame
 
 	temp = global_mask.copy()
 	#print(temp)
