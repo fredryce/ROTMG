@@ -1,0 +1,4 @@
+model_checkpoint_path: "rotmg-dqn-15000"
+all_model_checkpoint_paths: "rotmg-dqn-5000"
+all_model_checkpoint_paths: "rotmg-dqn-10000"
+all_model_checkpoint_paths: "rotmg-dqn-15000"

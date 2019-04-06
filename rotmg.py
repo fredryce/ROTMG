@@ -136,7 +136,7 @@ def toward_realm(win_location):
 		min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)
 		min_val = min_val/10000000
 		#print(min_val)
-		if min_val  < 0.4 and not location_aq:
+		if min_val  < 0.6 and not location_aq:
 			#location_aq = realm_location_get(screen, center, 0)
 			pyautogui.keyUp('w')
 			print('location detected..')
@@ -200,8 +200,8 @@ pet_yard = cv2.imread('petyard.png', 0)
 
 
 
-cv2.namedWindow('output')
-cv2.setMouseCallback('output',mouse_cb)
+#cv2.namedWindow('output')
+#cv2.setMouseCallback('output',mouse_cb)
 nexus = False
 nexusing = False
 while True:
@@ -236,7 +236,7 @@ while True:
 		nexusing=False
 	frame = cv2.cvtColor(frame, cv2.COLOR_RGB2GRAY)
 
-	cv2.imshow('output', frame)
+	#cv2.imshow('output', frame)
 	cv2.setMouseCallback('output',mouse_cb, frame)
 	
 

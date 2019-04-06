@@ -42,14 +42,9 @@ def get_fame(fame_level):
 		return (fame/fame_level.shape[1])*100
 
 	except IndexError as e:
-		print('im not able to get fame result')
 		raise ValueError
 
 	
-
-
-
-
 
 def toward_realm(win_location):
 	pyautogui.keyDown('z')
@@ -69,8 +64,8 @@ def toward_realm(win_location):
 		min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)
 		min_val = min_val/10000000
 		#print(min_val)
-		if min_val  < 0.4 and not location_aq:
-			#location_aq = realm_location_get(screen, center, 0)
+		if min_val  < 0.6 and not location_aq:
+			
 			pyautogui.keyUp('w')
 			print('location detected..')
 			location_aq = True 
@@ -118,12 +113,13 @@ def realm_location_get(frame, center, seed, empty=None,manu=False):
 	temp[global_mask==1]=255
 
 	random.seed(seed)
-	rand_val = random.randint(0, spts[0].shape[0])
+	
 
 	#show_frame(temp)
 	#print(spts)
 	if manu:
 		try:
+			rand_val = random.randint(0, spts[0].shape[0])
 			diff_y = spts[0][rand_val] - center[0]
 			diff_x = spts[1][rand_val] - center[1]
 
@@ -155,8 +151,9 @@ def realm_location_get(frame, center, seed, empty=None,manu=False):
 			print('entered in realm')
 			print(spts)
 			if empty:
+				print('im in empty')
 				pyautogui.keyDown(empty)
-				time.sleep(1)
+				time.sleep(0.5)
 				pyautogui.keyUp(empty)
 
 		pyautogui.keyDown('0')

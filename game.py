@@ -18,9 +18,10 @@ class Rotmg(object):
 	def __init__(self):
 		win_location = get_win_info()
 		self.win_location = (win_location[0]+8, win_location[1]+51, win_location[2]-10, win_location[3]-10)
+		self.training_state = False
 	def step(self, action, prev_hp, prev_fame):
 
-		reward = -0.1 #reward changes based on how many red pixs in minimap
+		reward = -0.5 #reward changes based on how many red pixs in minimap
 		terminal = False
 		
 		self.perform_action(action)
@@ -29,17 +30,26 @@ class Rotmg(object):
 			reward = 1
 		if hp < prev_hp:
 			temp_reward = (hp - prev_hp)/100
-			if (reward - temp_reward) < -1:
+			if (reward + temp_reward) < -1:
 				reward = -1
 			else:
-				reward = temp_reward
+				reward += temp_reward
 		if hp < 30:
+			pyautogui.hotkey('ctrl')
 			reward = -1
 			terminal = True
-			pyautogui.hotkey('ctrl')
+			time.sleep(4)
+			self.to_realm()
+
+		'''
+		if int(hp)==5:
+			time.sleep(3)
+			reward = -1
+			terminal = True
 			self.reset()
-		if reward != -0.1:
-			print(reward)
+			print('player is dead')
+		'''
+			
 
 
 		return frame, reward, terminal, hp, fame
@@ -49,11 +59,25 @@ class Rotmg(object):
 		self.to_realm()
 
 	def to_nexus(self):
-		pass
+		pyautogui.moveTo(self.win_location[0]+((self.win_location[2] - self.win_location[0])/2), self.win_location[3]-35)
+		for i in range(3):
+			pyautogui.click()
+			time.sleep(3)
+		pyautogui.moveTo(self.win_location[0]+((self.win_location[2] - self.win_location[0])/2), self.win_location[1]+150)
+		pyautogui.click()
+		time.sleep(3)
+		pyautogui.moveTo(self.win_location[0]+((self.win_location[2] - self.win_location[0])/2), self.win_location[3]-35)
+		pyautogui.click()
+		time.sleep(4)
+
 	def to_realm(self):
-		sleep(4)
+		print('gonig towards realm')
 		toward_realm(self.win_location)
 		sleep(4)
+		print('im completed')
+		pyautogui.moveTo(self.win_location[0]+((self.win_location[2] - self.win_location[0])/2)-100, self.win_location[1]+((self.win_location[3]-self.win_location[1])/2)-100)
+		pyautogui.keyDown('i')
+		pyautogui.keyUp('i')
 	def is_over(self, gray):
 		#if nexus or died rewards decrease, return rewards
 		pass
@@ -149,6 +173,7 @@ class Rotmg(object):
 
 	def get_current(self):
 		is_black = False
+		is_completed = False
 		while True:
 			screen = np.array(grab_screen(region=self.win_location), dtype='uint8')
 			frame = cv2.cvtColor(screen, cv2.COLOR_BGR2RGB)
@@ -158,13 +183,20 @@ class Rotmg(object):
 				prev_fame = get_fame(fame_level)
 				if is_black:
 					is_black = False
-					time.sleep(2)
+					time.sleep(3)
+					is_completed = True
 					continue
-
+				if is_completed: #if entered
+					print('i press controlled')
+					pyautogui.hotkey('ctrl')
+					time.sleep(4)
+					self.to_realm()
 				break
 			except ValueError as e:
-				print('im leaving or entering')
+				print('im enter')
 				is_black = True
+				
+				
 
 		return prev_hp, game_win, prev_fame
 
@@ -174,13 +206,11 @@ class Rotmg(object):
 if __name__=="__main__":
 	action = [0,0,0,0,0,0,1]
 	game = Rotmg()
-	prev_hp, game_win, prev_fame = game.get_current()
+	pyautogui.moveTo(game.win_location[0]+((game.win_location[2] - game.win_location[0])/2)-100, game.win_location[1]+((game.win_location[3]-game.win_location[1])/2)-100)
+	prev_hp, game_win, prev_fame, dead = game.get_current()
 	while True:
-		#print(prev_hp, prev_fame)
+		print(int(prev_hp), prev_fame)
 		frame, reward, terminal, prev_hp, prev_fame = game.step(action,prev_hp, prev_fame)
-		print(frame.shape)
-		frame =cv2.resize(frame, (80, 80))
-		print(frame.shape)
 		if reward != -0.1:
 			print(reward)
 

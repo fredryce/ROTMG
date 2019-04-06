@@ -17,13 +17,14 @@ from collections import deque
 GAME = 'rotmg' # the name of the game being played for log files
 ACTIONS = 19 # number of valid actions
 GAMMA = 0.99 # decay rate of past observations
-OBSERVE = 100000. # timesteps to observe before training
+OBSERVE = 1000. # timesteps to observe before training
 EXPLORE = 2000000. # frames over which to anneal epsilon
 FINAL_EPSILON = 0.0001 # final value of epsilon
-INITIAL_EPSILON = 0.0001 # starting value of epsilon
+INITIAL_EPSILON = 0.9930011999506337 # starting value of epsilon
 REPLAY_MEMORY = 50000 # number of previous transitions to remember
 BATCH = 32 # size of minibatch
 FRAME_PER_ACTION = 1
+INITIAL_T = 0
 
 def weight_variable(shape):
     initial = tf.truncated_normal(shape, stddev = 0.01)
@@ -80,6 +81,7 @@ def createNetwork():
     return s, readout, h_fc1
 
 def trainNetwork(s, readout, h_fc1, sess):
+
     # define the cost function
     a = tf.placeholder("float", [None, ACTIONS])
     y = tf.placeholder("float", [None])
@@ -89,15 +91,12 @@ def trainNetwork(s, readout, h_fc1, sess):
 
     # open up a game state to communicate with emulator
     game_state = Rotmg()
-    game_state.reset()
+    game_state.to_realm()
 
     # store the previous observations in replay memory
     D = deque()
 
-    # printing
-    a_file = open("/readout.txt", 'w')
-    h_file = open("/hidden.txt", 'w')
-
+    
     # get the first state by doing nothing and preprocess the image to 80x80x4
     do_nothing = np.zeros(ACTIONS)
     do_nothing[ACTIONS-1] = 1
@@ -109,22 +108,30 @@ def trainNetwork(s, readout, h_fc1, sess):
 
     # saving and loading networks
     saver = tf.train.Saver()
-    sess.run(tf.initialize_all_variables())
+    sess.run(tf.global_variables_initializer())
     checkpoint = tf.train.get_checkpoint_state("saved_networks")
     if checkpoint and checkpoint.model_checkpoint_path:
         saver.restore(sess, checkpoint.model_checkpoint_path)
         print("Successfully loaded:", checkpoint.model_checkpoint_path)
+        with open('epsilonvalues.txt', 'r') as f:
+        	value = f.read().split(',')
+        	INITIAL_EPSILON = float(value[1])
+        	INITIAL_T = int(value[0])
+
+
+
+
     else:
         print("Could not find old network weights")
 
     # start training
     epsilon = INITIAL_EPSILON
-    t = 0
+    t = INITIAL_T
     while "flappy bird" != "angry bird":
         # choose an action epsilon greedily
         readout_t = readout.eval(feed_dict={s : [s_t]})[0]
         a_t = np.zeros([ACTIONS])
-        action_index = 0
+        action_index = ACTIONS - 1
         if t % FRAME_PER_ACTION == 0:
             if random.random() <= epsilon:
                 print("----------Random Action----------")
@@ -134,7 +141,7 @@ def trainNetwork(s, readout, h_fc1, sess):
                 action_index = np.argmax(readout_t)
                 a_t[action_index] = 1
         else:
-            a_t[0] = 1 # do nothing
+            a_t[ACTIONS-1] = 1 # do nothing
 
         # scale down epsilon
         if epsilon > FINAL_EPSILON and t > OBSERVE:
@@ -185,8 +192,11 @@ def trainNetwork(s, readout, h_fc1, sess):
         t += 1
 
         # save progress every 10000 iterations
-        if t % 10000 == 0:
-            saver.save(sess, GAME + '-dqn', global_step = t)
+        if t % 5000 == 0:
+            saver.save(sess, 'saved_networks/' + GAME + '-dqn', global_step = t)
+            value_str = '{} iteration epsilon is {}\n'.format(str(t), str(epsilon))
+            with open('epsilonvalues.txt', 'a') as f:
+                f.write(value_str)
 
         # print info
         state = ""
