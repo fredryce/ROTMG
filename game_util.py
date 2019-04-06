@@ -56,6 +56,7 @@ def toward_realm(win_location):
 	w, h = realm_location.shape
 	win_location = (int(win_location[0]+(win_location[2] - win_location[0])*0.75), win_location[1], win_location[2], int(win_location[1]+(win_location[3] - win_location[1])*0.33))
 	counter = 0
+	is_stuck = 0
 	screen = np.array(grab_screen(region=win_location), dtype='uint8')
 	frame = cv2.cvtColor(screen, cv2.COLOR_BGR2GRAY)
 	center = (int(frame.shape[0]/2), int(frame.shape[1]/2))
@@ -77,6 +78,22 @@ def toward_realm(win_location):
 
 			empty = realm_location_get(screen, center, seed, empty, True)
 			counter+=1
+		else:
+			if is_stuck%100 == 0:
+				print('im stuck')
+				stuck_direction = int((is_stuck/100))
+				if stuck_direction > 0:
+					if (stuck_direction)%2==0:
+						for i in range(stuck_direction):
+							pyautogui.keyDown('a')
+							pyautogui.keyUp('a')
+					else:
+						for i in range(stuck_direction):
+							pyautogui.keyDown('d')
+							pyautogui.keyUp('d')
+
+
+			is_stuck+=1
 			
 
 		top_left = min_loc
@@ -130,19 +147,23 @@ def realm_location_get(frame, center, seed, empty=None,manu=False):
 			
 			if diff_y > 0:
 				pyautogui.keyDown('s')
+				time.sleep(0.01*abs(diff_y))
 				pyautogui.keyUp('s')
 				empty = 's'
 			elif diff_y < 0:
 				pyautogui.keyDown('w')
+				time.sleep(0.01*abs(diff_y))
 				pyautogui.keyUp('w')
 				empty='w'
 
 			if diff_x < 0:
 				pyautogui.keyDown('a')
+				time.sleep(0.01*abs(diff_x))
 				pyautogui.keyUp('a')
 				empty='a'
 			elif diff_x >0:
 				pyautogui.keyDown('d')
+				time.sleep(0.01*abs(diff_x))
 				pyautogui.keyUp('d')
 				empty='d'
 
@@ -153,7 +174,7 @@ def realm_location_get(frame, center, seed, empty=None,manu=False):
 			if empty:
 				print('im in empty')
 				pyautogui.keyDown(empty)
-				time.sleep(0.5)
+				time.sleep(0.1)
 				pyautogui.keyUp(empty)
 
 		pyautogui.keyDown('0')

@@ -100,22 +100,23 @@ def realm_location_get(frame, center, seed, manu=False):
 			
 			if diff_y > 0:
 				pyautogui.keyDown('s')
+				time.sleep(0.01*abs(diff_y))
 				pyautogui.keyUp('s')
 			elif diff_y < 0:
 				pyautogui.keyDown('w')
+				time.sleep(0.01*abs(diff_y))
 				pyautogui.keyUp('w')
 
 			if diff_x < 0:
 				pyautogui.keyDown('a')
+				time.sleep(0.01*abs(diff_x))
 				pyautogui.keyUp('a')
 			elif diff_x >0:
 				pyautogui.keyDown('d')
+				time.sleep(0.01*abs(diff_x))
 				pyautogui.keyUp('d')
-			return False
 		except IndexError:
-			print('entered in realmw')
-			print(spts)
-			return True
+			pass
  
 	
 
@@ -126,17 +127,19 @@ def toward_realm(win_location):
 	realm_location = cv2.imread('realm.png', 0)
 	location_aq = False #got realm location
 	w, h = realm_location.shape
+	is_stuck = 0
 	win_location = (int(win_location[0]+(win_location[2] - win_location[0])*0.75), win_location[1], win_location[2], int(win_location[1]+(win_location[3] - win_location[1])*0.33))
 	counter = 0
-	while True:
-		screen = np.array(grab_screen(region=win_location), dtype='uint8')
-		frame = cv2.cvtColor(screen, cv2.COLOR_BGR2GRAY)
-		center = (int(frame.shape[0]/2)+1, int(frame.shape[1]/2)+1)
+	screen = np.array(grab_screen(region=win_location), dtype='uint8')
+	frame = cv2.cvtColor(screen, cv2.COLOR_BGR2GRAY)
+	center = (int(frame.shape[0]/2), int(frame.shape[1]/2))
+	while frame.any():
+		
 		res = cv2.matchTemplate(frame,realm_location, cv2.TM_SQDIFF)
 		min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)
 		min_val = min_val/10000000
 		#print(min_val)
-		if min_val  < 0.6 and not location_aq:
+		if min_val  < 0.7 and not location_aq:
 			#location_aq = realm_location_get(screen, center, 0)
 			pyautogui.keyUp('w')
 			print('location detected..')
@@ -147,10 +150,25 @@ def toward_realm(win_location):
 
 				seed = random.randrange(0,100)
 
-			done = realm_location_get(screen, center, seed, True)
+			realm_location_get(screen, center, seed, True)
 			counter+=1
-			if done:
-				break
+		else:
+			if is_stuck%100 == 0:
+				print('im stuck')
+				stuck_direction = int((is_stuck/100))
+				if stuck_direction > 0:
+					if (stuck_direction)%2==0:
+						for i in range(stuck_direction):
+							pyautogui.keyDown('a')
+							pyautogui.keyUp('a')
+					else:
+						for i in range(stuck_direction):
+							pyautogui.keyDown('d')
+							pyautogui.keyUp('d')
+
+
+			is_stuck+=1
+
 			
 
 		top_left = min_loc
@@ -162,6 +180,8 @@ def toward_realm(win_location):
 		if cv2.waitKey(25) & 0xFF == ord('q'):
 			cv2.destroyAllWindows()
 			break
+		screen = np.array(grab_screen(region=win_location), dtype='uint8')
+		frame = cv2.cvtColor(screen, cv2.COLOR_BGR2GRAY)
 	
 	
 
@@ -190,16 +210,16 @@ def check_dong(game_win, kargs):
 
 
 win_location = get_win_info()
-win_location = (win_location[0]+8, win_location[1]+51, win_location[2]-10, win_location[3]-10)
+win_location = (win_location[0]+8, win_location[1]+100, win_location[2]-10, win_location[3]-10)
 prev_hp = 99
-count_down(1)
+count_down(4)
 print(win_location)
 
 next_image = cv2.imread('next.png', 0)
 pet_yard = cv2.imread('petyard.png', 0)
 
 
-
+toward_realm(win_location)
 #cv2.namedWindow('output')
 #cv2.setMouseCallback('output',mouse_cb)
 nexus = False
