@@ -108,7 +108,32 @@ def toward_realm(win_location):
 		screen = np.array(grab_screen(region=win_location), dtype='uint8')
 		frame = cv2.cvtColor(screen, cv2.COLOR_BGR2GRAY)
 	
-	
+def check_who():
+	pyautogui.keyDown('/')
+	pyautogui.keyUp('/')
+	pyautogui.typewrite('who')
+	pyautogui.keyDown('return')
+	pyautogui.keyUp('return')
+
+def get_player_name(frame):
+	player_frame = frame[int(frame.shape[0]*0.92):int(frame.shape[0]*0.99),:,:]
+	mask = np.zeros((player_frame.shape[0], player_frame.shape[1]), np.uint8)
+	mask[np.where((player_frame==[0,255,255]).all(axis=2))] = 255
+	gray = cv2.medianBlur(mask, 3)
+	string_names = pytesseract.image_to_string(gray)
+	string_names = ''.join(x for x in string_names if x.isalpha() or x==',')
+	name_list = string_names.split(',')
+	assert len(name_list) > 0
+	index = random.randrange(len(name_list))
+	return name_list[index]
+
+def tp_to_player(name):
+	pyautogui.keyDown('/')
+	pyautogui.keyUp('/')
+	value = 'teleport '+name
+	pyautogui.typewrite(value)
+	pyautogui.keyDown('return')
+	pyautogui.keyUp('return')
 
 
 

@@ -4,6 +4,8 @@ import pyautogui
 from grabscreen import grab_screen, get_win_info
 import time
 import random
+import pytesseract
+import re
 
 def mouse_cb(event, x, y, flags, params):
 	if event == cv2.EVENT_LBUTTONDOWN:
@@ -94,8 +96,7 @@ def realm_location_get(frame, center, seed, manu=False):
 
 			#print('im at center {}, my goal is {}'.format(center,(spts[0][0], spts[1][0])))
 			#print(diff_y)
-			pyautogui.keyDown('0')
-			pyautogui.keyUp('0')
+			
 
 			
 			if diff_y > 0:
@@ -118,7 +119,8 @@ def realm_location_get(frame, center, seed, manu=False):
 		except IndexError:
 			pass
  
-	
+		pyautogui.keyDown('0')
+		pyautogui.keyUp('0')
 
 def toward_realm(win_location):
 	pyautogui.keyDown('z')
@@ -186,10 +188,32 @@ def toward_realm(win_location):
 		frame = cv2.cvtColor(screen, cv2.COLOR_BGR2GRAY)
 	
 	
+def check_who():
+	pyautogui.keyDown('/')
+	pyautogui.keyUp('/')
+	pyautogui.typewrite('who')
+	pyautogui.keyDown('return')
+	pyautogui.keyUp('return')
+def get_player_name(frame):
+	player_frame = frame[int(frame.shape[0]*0.92):int(frame.shape[0]*0.99),:,:]
+	mask = np.zeros((player_frame.shape[0], player_frame.shape[1]), np.uint8)
+	mask[np.where((player_frame==[0,255,255]).all(axis=2))] = 255
+	gray = cv2.medianBlur(mask, 3)
+	string_names = pytesseract.image_to_string(gray)
+	string_names = ''.join(x for x in string_names if x.isalpha() or x==',')
+	name_list = string_names.split(',')
+	assert len(name_list) > 0
+	index = random.randrange(len(name_list))
+	print('teleporting to ', name_list[index])
+	return name_list[index]
 
-
-
-
+def tp_to_player(name):
+	pyautogui.keyDown('/')
+	pyautogui.keyUp('/')
+	value = 'teleport '+name
+	pyautogui.typewrite(value)
+	pyautogui.keyDown('return')
+	pyautogui.keyUp('return')
 
 def check_dong(game_win, kargs):
 	result = []
@@ -221,16 +245,33 @@ next_image = cv2.imread('next.png', 0)
 pet_yard = cv2.imread('petyard.png', 0)
 
 
-toward_realm(win_location)
+#toward_realm(win_location)
 #cv2.namedWindow('output')
 #cv2.setMouseCallback('output',mouse_cb)
 nexus = False
 nexusing = False
+tp=False
+check=False
 while True:
 	screen = np.array(grab_screen(region=win_location), dtype='uint8')
 	frame = cv2.cvtColor(screen, cv2.COLOR_BGR2RGB)
 	game_win, map_win, fame_level, hp_level, mana_level = process_game_frame(frame)
 	if not nexus:
+		
+		if tp:
+			try:
+				name =get_player_name(game_win)
+				tp_to_player(name)
+				tp=False
+			except AssertionError:
+				print('im here@!@')
+				check = False
+		
+		if not check:
+			check_who()
+			tp=True
+			check=True
+		
 		hp = get_hp(hp_level)
 		mana = get_mana(mana_level)
 		print('HP:{} mana:{}'.format(hp, mana))
@@ -256,8 +297,7 @@ while True:
 		toward_realm(win_location)
 		nexus = False
 		nexusing=False
-	frame = cv2.cvtColor(frame, cv2.COLOR_RGB2GRAY)
-
+	#frame = cv2.cvtColor(frame, cv2.COLOR_RGB2GRAY)
 	#cv2.imshow('output', frame)
 	cv2.setMouseCallback('output',mouse_cb, frame)
 	

@@ -19,13 +19,25 @@ class Rotmg(object):
 		win_location = get_win_info()
 		self.win_location = (win_location[0]+8, win_location[1]+51, win_location[2]-10, win_location[3]-10)
 		self.training_state = False
+		self.useless = 0
+		self.get_who = False
 	def step(self, action, prev_hp, prev_fame):
+		if self.useless % 1000 == 0:
+			check_who()
+			self.get_who=True
+
 
 		reward = -0.5 #reward changes based on how many red pixs in minimap
 		terminal = False
 		
 		self.perform_action(action)
 		hp, frame, fame= self.get_current()
+
+		if self.get_who:
+			name = get_player_name(frame)
+			tp_to_player(name)
+			self.get_who = False
+
 		if fame != prev_fame: # there is a change in exp
 			reward = 1
 		if hp < prev_hp:
@@ -41,15 +53,10 @@ class Rotmg(object):
 			time.sleep(4)
 			self.to_realm()
 
-		'''
-		if int(hp)==5:
-			time.sleep(3)
-			reward = -1
-			terminal = True
-			self.reset()
-			print('player is dead')
-		'''
-			
+		if reward == -0.5:
+			self.useless+=1
+		else:
+			self.useless = 0
 
 
 		return frame, reward, terminal, hp, fame
