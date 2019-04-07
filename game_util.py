@@ -5,6 +5,7 @@ import pyautogui
 from grabscreen import grab_screen, get_win_info
 import random
 import time
+import pytesseract
 
 def process_game_frame(frame):
 	height, width, _ = frame.shape
@@ -125,6 +126,7 @@ def get_player_name(frame):
 	name_list = string_names.split(',')
 	assert len(name_list) > 0
 	index = random.randrange(len(name_list))
+	print('im teleporting to ', name_list[index])
 	return name_list[index]
 
 def tp_to_player(name):

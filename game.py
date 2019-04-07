@@ -19,7 +19,7 @@ class Rotmg(object):
 		win_location = get_win_info()
 		self.win_location = (win_location[0]+8, win_location[1]+51, win_location[2]-10, win_location[3]-10)
 		self.training_state = False
-		self.useless = 0
+		self.useless = 1
 		self.get_who = False
 	def step(self, action, prev_hp, prev_fame):
 		if self.useless % 100 == 0:

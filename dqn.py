@@ -116,7 +116,7 @@ def trainNetwork(s, readout, h_fc1, sess):
         with open('epsilonvalues.txt', 'r') as f:
         	value = f.read().split(',')
         	INITIAL_EPSILON = float(value[1])
-        	INITIAL_T = int(value[0])
+        	#INITIAL_T = int(value[0])
 
 
 
