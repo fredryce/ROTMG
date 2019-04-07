@@ -22,7 +22,7 @@ class Rotmg(object):
 		self.useless = 0
 		self.get_who = False
 	def step(self, action, prev_hp, prev_fame):
-		if self.useless % 1000 == 0:
+		if self.useless % 100 == 0:
 			check_who()
 			self.get_who=True
 
@@ -39,7 +39,10 @@ class Rotmg(object):
 			self.get_who = False
 
 		if fame != prev_fame: # there is a change in exp
-			reward = 1
+			if fame < prev_fame:
+				reward = 1
+			else:
+				reward = (fame - prev_fame)/100
 		if hp < prev_hp:
 			temp_reward = (hp - prev_hp)/100
 			if (reward + temp_reward) < -1:
