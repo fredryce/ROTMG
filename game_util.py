@@ -118,6 +118,7 @@ def check_who():
 
 def get_player_name(frame):
 	player_frame = frame[int(frame.shape[0]*0.92):int(frame.shape[0]*0.99),:,:]
+	cv2.imshow('test', player_frame)
 	mask = np.zeros((player_frame.shape[0], player_frame.shape[1]), np.uint8)
 	mask[np.where((player_frame==[0,255,255]).all(axis=2))] = 255
 	gray = cv2.medianBlur(mask, 3)

@@ -35,7 +35,7 @@ class Rotmg(object):
 
 		if self.get_who:
 			name = get_player_name(frame)
-			tp_to_player(name)
+			#tp_to_player(name)
 			self.get_who = False
 
 		if fame != prev_fame: # there is a change in exp
