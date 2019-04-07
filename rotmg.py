@@ -129,11 +129,13 @@ def toward_realm(win_location):
 	w, h = realm_location.shape
 	is_stuck = 0
 	win_location = (int(win_location[0]+(win_location[2] - win_location[0])*0.75), win_location[1], win_location[2], int(win_location[1]+(win_location[3] - win_location[1])*0.33))
+	win_location = (win_location[0]+20, win_location[1]+20, win_location[2]-20, win_location[3]-20) #add temp
 	counter = 0
 	screen = np.array(grab_screen(region=win_location), dtype='uint8')
 	frame = cv2.cvtColor(screen, cv2.COLOR_BGR2GRAY)
 	center = (int(frame.shape[0]/2), int(frame.shape[1]/2))
 	while frame.any():
+		#print(frame.any())
 		
 		res = cv2.matchTemplate(frame,realm_location, cv2.TM_SQDIFF)
 		min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)
@@ -168,7 +170,7 @@ def toward_realm(win_location):
 
 
 			is_stuck+=1
-
+	
 			
 
 		top_left = min_loc
