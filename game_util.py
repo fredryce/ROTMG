@@ -45,7 +45,21 @@ def get_fame(fame_level):
 	except IndexError as e:
 		raise ValueError
 
-	
+def watch_done(win_location):
+	win_location = (int(win_location[0]+(win_location[2] - win_location[0])*0.75)+20, win_location[1]+20, win_location[2]-20, int(win_location[1]+(win_location[3] - win_location[1])*0.33)-20)
+	screen = np.array(grab_screen(region=win_location), dtype='uint8')
+	frame = cv2.cvtColor(screen, cv2.COLOR_BGR2GRAY)
+	while not frame.any():
+		print('waiting....')
+		screen = np.array(grab_screen(region=win_location), dtype='uint8')
+		frame = cv2.cvtColor(screen, cv2.COLOR_BGR2GRAY)
+
+
+		if cv2.waitKey(25) & 0xFF == ord('q'):
+			cv2.destroyAllWindows()
+			break
+
+	print('done')
 
 def toward_realm(win_location):
 	pyautogui.keyDown('z')
@@ -117,13 +131,12 @@ def check_who():
 	pyautogui.keyUp('return')
 
 def get_player_name(frame):
-	player_frame = frame[int(frame.shape[0]*0.92):int(frame.shape[0]*0.99),:,:]
-	cv2.imshow('test', player_frame)
-	time.sleep(30)
+	player_frame = frame[int(frame.shape[0]*0.50):,:,:]
 	mask = np.zeros((player_frame.shape[0], player_frame.shape[1]), np.uint8)
 	mask[np.where((player_frame==[0,255,255]).all(axis=2))] = 255
-	gray = cv2.medianBlur(mask, 3)
-	string_names = pytesseract.image_to_string(gray)
+	cv2.imwrite('tp.jpg', mask)
+	#gray = cv2.medianBlur(mask, 3)
+	string_names = pytesseract.image_to_string(mask)
 	string_names = ''.join(x for x in string_names if x.isalpha() or x==',')
 	name_list = string_names.split(',')
 	assert len(name_list) > 0
@@ -135,6 +148,8 @@ def tp_to_player(name):
 	pyautogui.keyDown('/')
 	pyautogui.keyUp('/')
 	value = 'teleport '+name
+	with open('tpplayer.txt', 'a') as f:
+		f.write(value+'\n')
 	pyautogui.typewrite(value)
 	pyautogui.keyDown('return')
 	pyautogui.keyUp('return')

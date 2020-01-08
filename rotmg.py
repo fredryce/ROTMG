@@ -6,7 +6,7 @@ import time
 import random
 import pytesseract
 import re
-
+from game_util import watch_done
 def mouse_cb(event, x, y, flags, params):
 	if event == cv2.EVENT_LBUTTONDOWN:
 		try:
@@ -131,7 +131,7 @@ def toward_realm(win_location):
 	w, h = realm_location.shape
 	is_stuck = 0
 	win_location = (int(win_location[0]+(win_location[2] - win_location[0])*0.75), win_location[1], win_location[2], int(win_location[1]+(win_location[3] - win_location[1])*0.33))
-	win_location = (win_location[0]+20, win_location[1]+20, win_location[2]-20, win_location[3]-20) #add temp
+	#win_location = (win_location[0]+20, win_location[1]+20, win_location[2]-20, win_location[3]-20) #add temp
 	counter = 0
 	screen = np.array(grab_screen(region=win_location), dtype='uint8')
 	frame = cv2.cvtColor(screen, cv2.COLOR_BGR2GRAY)
@@ -194,17 +194,21 @@ def check_who():
 	pyautogui.typewrite('who')
 	pyautogui.keyDown('return')
 	pyautogui.keyUp('return')
+	time.sleep(1)
 def get_player_name(frame):
-	player_frame = frame[int(frame.shape[0]*0.92):int(frame.shape[0]*0.99),:,:]
+	player_frame = frame[int(frame.shape[0]*0.94):,:,:]
+	
 	mask = np.zeros((player_frame.shape[0], player_frame.shape[1]), np.uint8)
 	mask[np.where((player_frame==[0,255,255]).all(axis=2))] = 255
 	gray = cv2.medianBlur(mask, 3)
-	string_names = pytesseract.image_to_string(gray)
+	show_frame(mask)
+	string_names = pytesseract.image_to_string(mask)
 	string_names = ''.join(x for x in string_names if x.isalpha() or x==',')
 	name_list = string_names.split(',')
 	assert len(name_list) > 0
 	index = random.randrange(len(name_list))
 	print('teleporting to ', name_list[index])
+	print(string_names)
 	return name_list[index]
 
 def tp_to_player(name):
@@ -236,9 +240,9 @@ def check_dong(game_win, kargs):
 
 
 win_location = get_win_info()
-win_location = (win_location[0]+8, win_location[1]+100, win_location[2]-10, win_location[3]-10)
+win_location = (win_location[0]+8, win_location[1]+50, win_location[2]-10, win_location[3]-10)
 prev_hp = 99
-count_down(4)
+count_down(0)
 print(win_location)
 
 next_image = cv2.imread('next.png', 0)
@@ -258,43 +262,22 @@ while True:
 	game_win, map_win, fame_level, hp_level, mana_level = process_game_frame(frame)
 	if not nexus:
 		
-		if tp:
-			try:
-				name =get_player_name(game_win)
-				tp_to_player(name)
-				tp=False
-			except AssertionError:
-				print('im here@!@')
-				check = False
-		
-		if not check:
-			check_who()
-			tp=True
-			check=True
-		
 		hp = get_hp(hp_level)
 		mana = get_mana(mana_level)
 		print('HP:{} mana:{}'.format(hp, mana))
 		if hp < 30:
 			if check_special(hp_level):
-				
-				print("Entering Dongen")
-				for i in range(4):
-					time.sleep(1)
-					value = check_dong(game_win, {'next':next_image, 'petyard':pet_yard })
-					if nexusing:
-						value=0
-						continue
 
-				print('Entered Dongen: ', value)
-				if value == 0:
-					nexus = True
+				print("Entering Dongen")
+				watch_done(win_location)
+				time.sleep(2)
+
 			else:
 				print('dying')
 				pyautogui.hotkey('ctrl')
 				nexusing = True
 	else:
-		toward_realm(win_location)
+		#toward_realm(win_location)
 		nexus = False
 		nexusing=False
 	#frame = cv2.cvtColor(frame, cv2.COLOR_RGB2GRAY)

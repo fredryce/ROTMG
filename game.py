@@ -18,13 +18,16 @@ class Rotmg(object):
 	def __init__(self):
 		win_location = get_win_info()
 		self.win_location = (win_location[0]+8, win_location[1]+51, win_location[2]-10, win_location[3]-10)
+		self.last_tp_name = ''
 		self.training_state = False
 		self.useless = 1
 		self.get_who = False
+		self.tp_num = 20
 	def step(self, action, prev_hp, prev_fame):
-		if self.useless % 100 == 0:
-			check_who()
-			self.get_who=True
+		if self.useless % 200 == 0:
+			#check_who()
+			#self.get_who=True
+			pass
 
 
 		reward = -0.5 #reward changes based on how many red pixs in minimap
@@ -33,9 +36,18 @@ class Rotmg(object):
 		self.perform_action(action)
 		hp, frame, fame= self.get_current()
 
+		print('hp value is ', hp)
+		if hp<25:
+			self.imdead()
+			reward = -1
+
+
 		if self.get_who:
 			name = get_player_name(frame)
-			#tp_to_player(name)
+			if len(name) > 15:
+				self.useless = int(self.tp_num-self.tp_num*0.5)
+			tp_to_player(name)
+			self.last_tp_name = name
 			self.get_who = False
 
 		if fame != prev_fame: # there is a change in exp
@@ -59,10 +71,30 @@ class Rotmg(object):
 		if reward == -0.5:
 			self.useless+=1
 		else:
-			self.useless = 0
+			self.useless = 1
+
+		print('useless value is ', self.useless)
 
 
 		return frame, reward, terminal, hp, fame
+	def imdead(self):
+		print('imdead')
+		time.sleep(5)
+		pyautogui.click(x=self.win_location[0]+((self.win_location[2] - self.win_location[0])/2), y=self.win_location[3]-40)
+		time.sleep(1)
+		pyautogui.click(x=self.win_location[0]+((self.win_location[2] - self.win_location[0])/2), y=self.win_location[3]-40)
+		time.sleep(5)
+		pyautogui.click(x=self.win_location[0]+((self.win_location[2] - self.win_location[0])/2), y=self.win_location[3]-40)
+		time.sleep(5)
+		pyautogui.click(x=self.win_location[0]+((self.win_location[2] - self.win_location[0])/2), y=self.win_location[1]+100)
+		time.sleep(5)
+		pyautogui.click(x=self.win_location[0]+((self.win_location[2] - self.win_location[0])/2), y=self.win_location[3]-40)
+		time.sleep(1)
+		watch_done(self.win_location)
+
+		print('im in nexus')
+
+
 
 	def reset(self):
 		self.to_nexus()
@@ -216,12 +248,6 @@ class Rotmg(object):
 if __name__=="__main__":
 	action = [0,0,0,0,0,0,1]
 	game = Rotmg()
-	pyautogui.moveTo(game.win_location[0]+((game.win_location[2] - game.win_location[0])/2)-100, game.win_location[1]+((game.win_location[3]-game.win_location[1])/2)-100)
-	prev_hp, game_win, prev_fame, dead = game.get_current()
-	while True:
-		print(int(prev_hp), prev_fame)
-		frame, reward, terminal, prev_hp, prev_fame = game.step(action,prev_hp, prev_fame)
-		if reward != -0.1:
-			print(reward)
+	game.imdead()
 
 

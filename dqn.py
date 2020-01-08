@@ -17,8 +17,8 @@ from collections import deque
 GAME = 'rotmg' # the name of the game being played for log files
 ACTIONS = 19 # number of valid actions
 GAMMA = 0.99 # decay rate of past observations
-OBSERVE = 1000. # timesteps to observe before training
-EXPLORE = 2000000. # frames over which to anneal epsilon
+OBSERVE = 10000. # timesteps to observe before training
+EXPLORE = 200000. # frames over which to anneal epsilon
 FINAL_EPSILON = 0.0001 # final value of epsilon
 INITIAL_EPSILON = 0.9930011999506337 # starting value of epsilon
 REPLAY_MEMORY = 50000 # number of previous transitions to remember
@@ -127,7 +127,7 @@ def trainNetwork(s, readout, h_fc1, sess):
     # start training
     epsilon = INITIAL_EPSILON
     t = INITIAL_T
-    while "flappy bird" != "angry bird":
+    while True:
         # choose an action epsilon greedily
         readout_t = readout.eval(feed_dict={s : [s_t]})[0]
         a_t = np.zeros([ACTIONS])
@@ -194,8 +194,8 @@ def trainNetwork(s, readout, h_fc1, sess):
         # save progress every 10000 iterations
         if t % 5000 == 0:
             saver.save(sess, 'saved_networks/' + GAME + '-dqn', global_step = t)
-            value_str = '{} iteration epsilon is {}\n'.format(str(t), str(epsilon))
-            with open('epsilonvalues.txt', 'a') as f:
+            value_str = '{},{}\n'.format(str(t), str(epsilon))
+            with open('epsilonvalues.txt', 'w') as f:
                 f.write(value_str)
 
         # print info
@@ -210,6 +210,7 @@ def trainNetwork(s, readout, h_fc1, sess):
         print("TIMESTEP", t, "/ STATE", state, \
             "/ EPSILON", epsilon, "/ ACTION", action_index, "/ REWARD", r_t, \
             "/ Q_MAX %e" % np.max(readout_t))
+        print("last player tp to: ", game_state.last_tp_name)
         # write info to files
         '''
         if t % 10000 <= 100:
